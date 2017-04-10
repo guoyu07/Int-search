@@ -1,0 +1,105 @@
+<style>
+    td {
+        /*font-family: "Arial","Microsoft YaHei","YouYuan",sans-serif;*/
+        font: 10px/3  "Arial","Microsoft YaHei","YouYuan",sans-serif;
+        /*font-family: "宋体", "楷体_GB2312", "仿宋_GB2312";*/
+    }
+    tbody {
+        position: absolute;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    td {
+        background-color: rgb(249,252,255);
+        height: 24px;
+        width: 280px;
+        padding-left: 8px;
+    }
+    td:hover {
+        background-color: #66CCFF;
+        cursor: default;
+    }
+</style>
+
+<input type="hidden" id="hide" value="{{$host}}">
+<script>
+    tdlength = 9
+    $("#bdcsMain").blur(function(){
+        hideTds();
+    });
+
+    $('#searchButton').click(function() {openSearch();});
+    function openSearch() {
+        var searchText = $('#bdcsMain').val();
+        var ajaxCallUrl = 'http://zhannei.baidu.com/cse/search'+'?q='+searchText+'&s=XXXX&entry=1';
+        window.open(ajaxCallUrl);
+    }
+    function hideTds() {
+        var tds = document.querySelectorAll('td');
+        for (var i = 0; i < tdlength; i++) {
+            tds[i].style.display = 'none';
+        }
+    }
+    function fn(data) {
+        //选中tr
+        var tds = document.querySelectorAll('tr');
+
+        //拆分搜索结果
+        var wd =  document.querySelector('#bdcsMain').value.trim();
+        wd = wd.split("")
+
+        //匹配搜索结果，插入tr显示，不支持英文
+        data.s.forEach(function(item, index) {
+            tds[index].style.display = '';
+            bgColor = "orange";
+            if(isChinese(wd)){
+                for(x in wd){
+                    changeWd = "<span style='background-color: "+bgColor+";'>"+wd[x]+"</span>";
+                    var changeText
+                    if(!changeText){
+                        changeText = item.replace(wd[x],changeWd); //替换key
+                    }else{
+                        changeText = changeText.replace(wd[x],changeWd); //替换key
+                    }
+                }
+                tds[index].innerHTML = '<td >'+changeText ;
+            }else{
+                tds[index].innerHTML = '<td>'+item;
+            }
+            changeText ='';
+        });
+        // delete scripts  遍历节点尾
+        var s = document.querySelectorAll('script');  document.body.removeChild(s[s.length-1]);
+    }
+    function isChinese(temp)
+    {
+        for(t in temp){
+            var re=/[^\u4e00-\u9fa5]/;
+            if(re.test(temp[t])) return false;
+        }
+        return true;
+
+    }
+    hideTds();
+    document.querySelector('#bdcsMain').onkeyup = function() {
+        hideTds();
+        if (this.value.trim() === '') {
+            return ;
+        }
+        var s = document.createElement('script');
+        var wd = this.value.trim();
+        var host =  document.querySelector('#hide').value;
+        s.src = host+'/ajaxSearch?wd='+ wd;
+        document.body.appendChild(s);
+    };
+    document.querySelector('tbody').onclick = function(e) {
+        var searchText = e.target.innerHTML;
+        var ajaxCallUrl = 'http://zhannei.baidu.com/cse/search'+'?q='+searchText+'&s=XXXXX&entry=1';
+        window.open(ajaxCallUrl);
+    };
+    document.onclick = function(e) {
+        if (e.target === document.body) {
+            hideTds();
+        }
+    }
+</script>
